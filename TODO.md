@@ -21,16 +21,16 @@
   - Header with app title
   - Main content area
   - Responsive design foundation
-- [ ] **UI-2.2**: Build file upload component
+- [x] **UI-2.2**: Build file upload component
   - Drag & drop zone
   - File type validation (PNG/JPG)
   - File size validation (≤10MB)
   - Preview functionality
-- [ ] **UI-2.3**: Create form components
+- [x] **UI-2.3**: Create form components
   - Text input for prompt
   - Style dropdown (Editorial, Streetwear, Vintage)
   - Generate button
-- [ ] **UI-2.4**: Build live preview component
+- [x] **UI-2.4**: Build live preview component
   - Image preview
   - Prompt display
   - Style display
