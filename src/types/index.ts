@@ -2,11 +2,16 @@ export interface UploadedImage {
   file: File;
   dataUrl: string;
   originalSize: number;
-  processedSize?: number;
+  processedSize: number;
   dimensions: {
     width: number;
     height: number;
   };
+  originalDimensions: {
+    width: number;
+    height: number;
+  };
+  wasProcessed: boolean;
 }
 
 export interface GenerationRequest {
@@ -28,7 +33,7 @@ export interface GenerationError {
   retryCount?: number;
 }
 
-export type StyleOption = 'Editorial' | 'Streetwear' | 'Vintage';
+export type StyleOption = "Editorial" | "Streetwear" | "Vintage";
 
 export interface GenerationHistory {
   id: string;
@@ -38,7 +43,7 @@ export interface GenerationHistory {
   createdAt: string;
 }
 
-export type GenerationStatus = 'idle' | 'loading' | 'success' | 'error';
+export type GenerationStatus = "idle" | "loading" | "success" | "error";
 
 export interface AppState {
   uploadedImage: UploadedImage | null;

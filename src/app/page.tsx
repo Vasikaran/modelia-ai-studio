@@ -1,20 +1,23 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   ImageUpload,
   PromptInput,
   StyleSelector,
   LivePreview,
-} from '@/components';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { UploadedImage, StyleOption } from '@/types';
+  ImageProcessingInfo,
+} from "@/components";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { UploadedImage, StyleOption } from "@/types";
 
 export default function Home() {
-  const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(null);
-  const [prompt, setPrompt] = useState<string>('');
-  const [selectedStyle, setSelectedStyle] = useState<StyleOption>('Editorial');
+  const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(
+    null
+  );
+  const [prompt, setPrompt] = useState<string>("");
+  const [selectedStyle, setSelectedStyle] = useState<StyleOption>("Editorial");
   const [error, setError] = useState<string | null>(null);
 
   const handleImageUpload = (image: UploadedImage) => {
@@ -28,17 +31,17 @@ export default function Home() {
 
   const handleGenerate = () => {
     if (!uploadedImage) {
-      setError('Please upload an image first');
+      setError("Please upload an image first");
       return;
     }
     if (!prompt.trim()) {
-      setError('Please enter a prompt');
+      setError("Please enter a prompt");
       return;
     }
-    
+
     setError(null);
     // TODO: Implement generation logic in Phase 4
-    console.log('Generate with:', { uploadedImage, prompt, selectedStyle });
+    console.log("Generate with:", { uploadedImage, prompt, selectedStyle });
   };
 
   const isReadyToGenerate = uploadedImage && prompt.trim();
@@ -46,10 +49,10 @@ export default function Home() {
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+        <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
           AI-Powered Fashion Studio
         </h2>
-        <p className="mt-4 text-lg text-gray-600">
+        <p className="mt-4 text-lg text-muted-foreground">
           Upload your fashion images and transform them with AI-generated styles
         </p>
       </div>
@@ -76,7 +79,7 @@ export default function Home() {
           </div>
         </div>
       )}
-      
+
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         {/* Upload Section */}
         <Card>
@@ -102,10 +105,7 @@ export default function Home() {
               onChange={setPrompt}
               placeholder="Describe your vision..."
             />
-            <StyleSelector
-              value={selectedStyle}
-              onChange={setSelectedStyle}
-            />
+            <StyleSelector value={selectedStyle} onChange={setSelectedStyle} />
             <Button
               onClick={handleGenerate}
               disabled={!isReadyToGenerate}
@@ -129,18 +129,21 @@ export default function Home() {
         </Card>
       </div>
 
+      {/* Image Processing Details - Only show when image is uploaded */}
+      {uploadedImage && <ImageProcessingInfo uploadedImage={uploadedImage} />}
+
       {/* History Section */}
       <Card>
         <CardHeader>
           <CardTitle>Recent Generations</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="mb-4 text-sm text-gray-600">
+          <p className="mb-4 text-sm text-muted-foreground">
             Your last 5 generations will appear here
           </p>
           {/* TODO: History component will go here in Phase 5 */}
-          <div className="flex h-32 items-center justify-center rounded-md border-2 border-dashed border-gray-300 bg-gray-50">
-            <p className="text-sm text-gray-500">No generations yet</p>
+          <div className="flex h-32 items-center justify-center rounded-md border-2 border-dashed border-border bg-muted">
+            <p className="text-sm text-muted-foreground">No generations yet</p>
           </div>
         </CardContent>
       </Card>

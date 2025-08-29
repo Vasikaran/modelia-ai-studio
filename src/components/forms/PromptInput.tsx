@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import React from "react";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 interface PromptInputProps {
   value: string;
@@ -15,7 +15,7 @@ interface PromptInputProps {
 const PromptInput: React.FC<PromptInputProps> = ({
   value,
   onChange,
-  placeholder = 'Describe your vision...',
+  placeholder = "Describe your vision...",
   disabled = false,
   error,
 }) => {
@@ -31,8 +31,10 @@ const PromptInput: React.FC<PromptInputProps> = ({
         placeholder={placeholder}
         disabled={disabled}
         rows={4}
-        className={error ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}
-        aria-invalid={error ? 'true' : 'false'}
+        className={
+          error ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""
+        }
+        aria-invalid={error ? "true" : "false"}
         aria-describedby={
           error ? `${textareaId}-error` : `${textareaId}-description`
         }
@@ -40,7 +42,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
       {error && (
         <p
           id={`${textareaId}-error`}
-          className="mt-1 text-sm text-red-600"
+          className="mt-1 text-sm text-red-600 dark:text-red-400"
           role="alert"
         >
           {error}
@@ -49,7 +51,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
       {!error && (
         <p
           id={`${textareaId}-description`}
-          className="mt-1 text-sm text-gray-500"
+          className="mt-1 text-sm text-muted-foreground"
         >
           Describe what you want to create or modify in the image
         </p>
