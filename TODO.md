@@ -200,23 +200,3 @@
 **PR**: "Complete documentation and prepare for deployment"
 
 ---
-
-## Git Workflow Notes
-
-- Each phase should be a separate branch from `main`
-- Create meaningful commit messages following conventional commits
-- Each PR should include:
-  - Clear description of changes
-  - Screenshots for UI changes
-  - Testing notes
-  - Performance considerations (if applicable)
-
-## Estimated Time Distribution
-
-- **Phase 1-2**: 1-1.5 hours (Setup + Basic UI)
-- **Phase 3-4**: 2-2.5 hours (Image processing + API)
-- **Phase 5-6**: 1.5-2 hours (History + Accessibility)
-- **Phase 7-8**: 2-2.5 hours (Testing + Performance)
-- **Phase 9-10**: 1-1.5 hours (Bonus + Docs)
-
-**Total**: ~8-9.5 hours (within the 6-8 hour guideline with room for focused execution)
