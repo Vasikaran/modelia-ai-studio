@@ -1,9 +1,10 @@
-'use client';
+"use client";
 
-import React, { useCallback, useState } from 'react';
-import { cn } from '@/lib/utils';
-import { validateFile } from '@/utils/validation';
-import type { UploadedImage } from '@/types';
+import React, { useCallback, useState } from "react";
+import { cn } from "@/lib/utils";
+import { validateFile, validateImageDimensions } from "@/utils/validation";
+import { processImage, getImageDimensions } from "@/services/imageProcessing";
+import type { UploadedImage } from "@/types";
 
 interface ImageUploadProps {
   onImageUpload: (image: UploadedImage) => void;
@@ -18,58 +19,75 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 }) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [processingStep, setProcessingStep] = useState<string>("");
 
-  const processFile = useCallback(async (file: File) => {
-    setIsLoading(true);
-    
-    try {
-      // Validate file
-      const validation = validateFile(file);
-      if (!validation.isValid) {
-        onError(validation.error!);
-        return;
+  const processFile = useCallback(
+    async (file: File) => {
+      setIsLoading(true);
+      setProcessingStep("Validating file...");
+
+      try {
+        // Validate file first
+        const validation = validateFile(file);
+        if (!validation.isValid) {
+          onError(validation.error!);
+          return;
+        }
+
+        setProcessingStep("Checking image dimensions...");
+
+        // Get image dimensions for validation
+        const dimensions = await getImageDimensions(file);
+        const dimensionValidation = validateImageDimensions(
+          dimensions.width,
+          dimensions.height
+        );
+
+        if (!dimensionValidation.isValid) {
+          onError(dimensionValidation.error!);
+          return;
+        }
+
+        setProcessingStep("Processing image...");
+
+        // Process the image (resize if needed)
+        const processedImage = await processImage(file);
+
+        const uploadedImage: UploadedImage = {
+          file,
+          dataUrl: processedImage.dataUrl,
+          originalSize: processedImage.originalSize,
+          processedSize: processedImage.processedSize,
+          dimensions: processedImage.dimensions,
+          originalDimensions: processedImage.originalDimensions,
+          wasProcessed: processedImage.wasProcessed,
+        };
+
+        onImageUpload(uploadedImage);
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to process image";
+        onError(`${errorMessage}. Please try again.`);
+      } finally {
+        setIsLoading(false);
+        setProcessingStep("");
       }
+    },
+    [onImageUpload, onError]
+  );
 
-      // Create data URL
-      const dataUrl = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
+  const handleDrop = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      setIsDragOver(false);
 
-      // Get image dimensions
-      const dimensions = await new Promise<{ width: number; height: number }>((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve({ width: img.width, height: img.height });
-        img.onerror = reject;
-        img.src = dataUrl;
-      });
-
-      const uploadedImage: UploadedImage = {
-        file,
-        dataUrl,
-        originalSize: file.size,
-        dimensions,
-      };
-
-      onImageUpload(uploadedImage);
-    } catch {
-      onError('Failed to process image. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [onImageUpload, onError]);
-
-  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragOver(false);
-
-    const files = Array.from(e.dataTransfer.files);
-    if (files.length > 0) {
-      processFile(files[0]);
-    }
-  }, [processFile]);
+      const files = Array.from(e.dataTransfer.files);
+      if (files.length > 0) {
+        processFile(files[0]);
+      }
+    },
+    [processFile]
+  );
 
   const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -81,19 +99,22 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     setIsDragOver(false);
   }, []);
 
-  const handleFileInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      processFile(files[0]);
-    }
-  }, [processFile]);
+  const handleFileInput = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = e.target.files;
+      if (files && files.length > 0) {
+        processFile(files[0]);
+      }
+    },
+    [processFile]
+  );
 
   return (
     <div
       className={cn(
-        'relative flex min-h-[200px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-6 text-center transition-colors hover:bg-gray-100',
-        isDragOver && 'border-blue-500 bg-blue-50',
-        isLoading && 'cursor-not-allowed opacity-50',
+        "relative flex min-h-[200px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted p-6 text-center transition-colors hover:bg-muted/50",
+        isDragOver && "border-blue-500 bg-blue-50 dark:bg-blue-950",
+        isLoading && "cursor-not-allowed opacity-50",
         className
       )}
       onDrop={handleDrop}
@@ -108,7 +129,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         className="absolute inset-0 cursor-pointer opacity-0"
         aria-label="Upload image file"
       />
-      
+
       {isLoading ? (
         <div className="flex flex-col items-center">
           <svg
@@ -130,12 +151,14 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             />
           </svg>
-          <p className="mt-2 text-sm text-gray-600">Processing image...</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {processingStep || "Processing image..."}
+          </p>
         </div>
       ) : (
         <div className="flex flex-col items-center">
           <svg
-            className="h-12 w-12 text-gray-400"
+            className="h-12 w-12 text-muted-foreground"
             stroke="currentColor"
             fill="none"
             viewBox="0 0 48 48"
@@ -148,13 +171,13 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
               strokeLinejoin="round"
             />
           </svg>
-          <p className="mt-2 text-lg font-medium text-gray-900">
+          <p className="mt-2 text-lg font-medium text-foreground">
             Drop your image here
           </p>
-          <p className="mt-1 text-sm text-gray-600">
+          <p className="mt-1 text-sm text-muted-foreground">
             or click to browse files
           </p>
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-muted-foreground">
             PNG, JPG up to 10MB
           </p>
         </div>
